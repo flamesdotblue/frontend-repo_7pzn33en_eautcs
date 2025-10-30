@@ -1,28 +1,43 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import Navbar from './components/Navbar'
+import Home from './components/Home'
+import MenuPage from './components/MenuPage'
+import Footer from './components/Footer'
 
-function App() {
-  const [count, setCount] = useState(0)
+function useHashRoute() {
+  const [route, setRoute] = useState(window.location.hash || '#/')
+  useEffect(() => {
+    const onHash = () => setRoute(window.location.hash || '#/')
+    window.addEventListener('hashchange', onHash)
+    return () => window.removeEventListener('hashchange', onHash)
+  }, [])
+  return route
+}
+
+export default function App() {
+  const route = useHashRoute()
+
+  useEffect(() => {
+    // scroll to anchors within home
+    if (route.startsWith('#/') && route.split('#/')[1]) {
+      const anchor = route.split('#/')[1]
+      const el = document.getElementById(anchor)
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+  }, [route])
+
+  const Page = () => {
+    if (route.startsWith('#/menu')) return <MenuPage />
+    return <Home />
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 flex items-center justify-center">
-      <div className="bg-white p-8 rounded-lg shadow-lg">
-        <h1 className="text-3xl font-bold text-gray-800 mb-4">
-          Vibe Coding Platform
-        </h1>
-        <p className="text-gray-600 mb-6">
-          Your AI-powered development environment
-        </p>
-        <div className="text-center">
-          <button
-            onClick={() => setCount(count + 1)}
-            className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded"
-          >
-            Count is {count}
-          </button>
-        </div>
-      </div>
+    <div className="min-h-screen text-black bg-white">
+      <Navbar />
+      <Page />
+      <Footer />
     </div>
   )
 }
-
-export default App
